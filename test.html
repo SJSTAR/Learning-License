@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Practice Test - Driving License</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #e8d6cb; /* Champagne Pink */ }
+        .text-main-dark { color: #5d2e46; /* Violet (JTC) */ }
+        .bg-card { background-color: #faf7f4; /* Lightest Champagne Pink */ }
+        .border-main { border-color: #d0ada7; /* Tea Rose */ }
+        .btn-primary { background-color: #ad6a6c; /* Redwood */ }
+        .btn-primary:hover { background-color: #915052; /* Darker Redwood */ }
+        .btn-secondary { background-color: #b58db6; /* African Violet */ }
+        .btn-secondary:hover { background-color: #9b659c; /* Darker African Violet */ }
+        .btn-tertiary { background-color: #d0ada7; /* Tea Rose */ }
+        .btn-tertiary:hover { background-color: #b68178; /* Darker Tea Rose */ }
+
+        .option-btn { transition: all 0.3s ease; background-color: #faf7f4; border-color: #e8d6cb; color: #5d2e46; }
+        .option-btn:hover:not(:disabled) { transform: translateY(-2px); border-color: #ad6a6c; box-shadow: 0 4px 10px rgba(93, 46, 70, 0.05); }
+        .option-btn.selected { background-color: #e8d6cb; border-color: #ad6a6c; }
+        .correct { background-color: #dcfce7 !important; border-color: #22c55e !important; color: #15803d !important; transform: scale(1.02); }
+        .incorrect { background-color: #fee2e2 !important; border-color: #ef4444 !important; color: #b91c1c !important; }
+        .explanation-box { background-color: #faf7f4; border-left: 4px solid #b58db6; animation: fadeIn 0.5s ease; }
+        .loader { border: 4px solid #e8d6cb; border-radius: 50%; border-top: 4px solid #ad6a6c; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        #quiz-container, #results-container { animation: fadeIn 0.7s ease-out forwards; }
+        #question-area { transition: opacity 0.5s ease-in-out; }
+        .footer {
+            background-color: #5d2e46; /* Violet (JTC) */
+            color: #e8d6cb; /* Champagne Pink */
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen items-center justify-center p-4">
+
+    <!-- Main Content Area -->
+    <main class="w-full flex-grow flex items-center justify-center">
+        <!-- Loading Screen for AI Questions -->
+        <div id="ai-loading-screen" class="hidden w-full max-w-2xl text-center">
+            <div class="flex justify-center mb-4">
+                 <div class="w-16 h-16 border-8 border-main rounded-full animate-spin" style="border-color: #d0ada7; border-top-color: #ad6a6c;"></div>
+            </div>
+            <h2 class="text-2xl font-bold text-main-dark" id="ai-loading-text">✨ Generating your custom AI test...</h2>
+            <p class="text-main-dark/80">This might take a moment.</p>
+        </div>
+
+        <div id="quiz-container" class="hidden relative w-full max-w-2xl bg-card rounded-2xl shadow-2xl p-6 md:p-8">
+            <!-- Pause Overlay -->
+            <div id="pause-overlay" class="hidden absolute inset-0 flex-col items-center justify-center z-20 rounded-2xl" style="background-color: rgba(93, 46, 70, 0.8); animation: fadeIn 0.3s;">
+                <h2 class="text-4xl font-bold text-white mb-4">Paused</h2>
+                <button id="resume-btn" class="btn-primary text-white font-bold py-3 px-8 rounded-lg text-lg">Resume</button>
+            </div>
+
+            <!-- Quiz Header -->
+            <div class="flex justify-between items-center border-b border-main pb-4 mb-6">
+                <div>
+                    <h1 id="quiz-title" class="text-2xl font-bold text-main-dark">RTO Practice Test</h1>
+                    <p id="question-counter" class="text-main-dark/80">Question 1 of 15</p>
+                </div>
+                <div class="flex items-center">
+                    <div id="timer" class="text-xl font-semibold" style="color: #ad6a6c;">10:00</div>
+                     <button id="pause-btn" title="Pause Timer" class="ml-4 text-main-dark/60 hover:text-main-dark transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Question Area -->
+            <div id="question-area">
+                <div id="image-container" class="mb-4 text-center h-32 flex items-center justify-center"></div>
+                <h2 id="question-text" class="text-xl md:text-2xl font-semibold text-main-dark mb-6 min-h-[64px]">Loading question...</h2>
+                <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            </div>
+            
+            <!-- Explanation Area -->
+            <div id="explanation-container" class="hidden mt-6">
+                <div class="flex items-center justify-center mb-2" id="explanation-loader">
+                    <div class="loader"></div><p class="ml-2 text-main-dark/80">Generating explanation...</p>
+                </div>
+                <div id="explanation-box" class="explanation-box p-4 rounded-r-lg">
+                     <h3 class="font-bold text-lg text-main-dark mb-2">✨ Explanation</h3><p id="explanation-text" class="text-main-dark/90"></p>
+                </div>
+            </div>
+
+            <!-- Quiz Controls -->
+            <div class="mt-8 pt-4 border-t border-main flex justify-between items-center">
+                <a href="dashboard.html" id="quit-btn" class="btn-tertiary text-main-dark font-bold py-2 px-4 rounded-lg transition-colors">Quit</a>
+                <div>
+                     <button id="explain-btn" class="hidden btn-secondary text-white font-bold py-2 px-4 rounded-lg mr-2 transition-transform transform hover:scale-105">✨ Explain</button>
+                     <button id="next-btn" class="btn-primary text-white font-bold py-2 px-6 rounded-lg transition-transform transform hover:scale-105">Submit</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-container" class="hidden w-full max-w-2xl bg-card rounded-2xl shadow-2xl p-8 text-center">
+            <div id="result-icon" class="text-6xl mb-4"></div>
+            <h1 id="result-title" class="text-4xl font-bold text-main-dark mb-2">Test Completed!</h1>
+            <p id="result-message" class="text-2xl font-semibold mb-4"></p>
+            <p class="text-lg text-main-dark/80 mb-6">Your score is:</p>
+            <div class="text-6xl font-bold mb-8" id="score-text" style="color: #ad6a6c;">12 / 15</div>
+            <div class="flex justify-center gap-4">
+                <a href="test.html" id="retry-btn" class="btn-primary text-white font-bold py-3 px-6 rounded-lg transition-transform transform hover:scale-105">Retry Test</a>
+                <a href="dashboard.html" id="dashboard-btn" class="btn-tertiary text-main-dark font-bold py-3 px-6 rounded-lg transition-colors">Go to Dashboard</a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="w-full py-4 footer">
+        <div class="container mx-auto px-6 flex justify-between items-center text-sm">
+            <p>&copy; 2025 | Created by 
+                <a href="https://sjstar.github.io/portfolio/" target="_blank" rel="noopener noreferrer" class="font-bold hover:underline" style="color: #b58db6;">SJ Star</a>
+                <a href="https://www.linkedin.com/in/sjstar/" target="_blank" rel="noopener noreferrer" class="inline-block ml-2 transition-transform hover:scale-110">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="h-5 w-5" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                </a>
+            </p>
+            <p id="system-time" class="font-semibold"></p>
+        </div>
+    </footer>
+
+    <script>
+        // All JavaScript logic remains the same.
+        const standardQuestions = [
+            { type: 'text', question: { en: "When a vehicle is approaching a pedestrian crossing, the driver shall", hi: "जब कोई वाहन पैदल यात्री क्रॉसिंग के पास आ रहा हो, तो चालक को" }, options: { en: ["Slow down, sound horn and pass", "Sound horn and pass", "Stop the vehicle and wait", "Speed up to cross quickly"], hi: ["धीमा करें, हॉर्न बजाएं और गुजरें", "हॉर्न बजाएं और गुजरें", "वाहन रोकें और प्रतीक्षा करें", "जल्दी से पार करने के लिए गति बढ़ाएं"] }, answer: 2 },
+            { type: 'text', question: { en: "You are allowed to overtake a vehicle in front", hi: "आपको आगे के वाहन से आगे निकलने की अनुमति है" }, options: { en: ["Through the right side", "Through the left side", "During night time", "On a narrow bridge"], hi: ["दाहिनी ओर से", "बायीं ओर से", "रात के समय", "एक संकरे पुल पर"] }, answer: 0 },
+            { type: 'image', image: 'https://i.imgur.com/S32v78A.png', question: { en: "What does this sign mean?", hi: "इस संकेत का क्या अर्थ है?" }, options: { en: ["Stop", "No Parking", "Hospital Ahead", "Go"], hi: ["रुकें", "पार्किंग नहीं", "आगे अस्पताल है", "जाओ"] }, answer: 0 },
+            { type: 'image', image: 'https://i.imgur.com/53W2b3d.png', question: { en: "What does this sign indicate?", hi: "यह संकेत क्या दर्शाता है?" }, options: { en: ["Minimum speed 50 km/h", "Speed limit 50 km/h", "End of speed limit", "Road number 50"], hi: ["न्यूनतम गति 50 किमी/घंटा", "गति सीमा 50 किमी/घंटा", "गति सीमा का अंत", "सड़क संख्या 50"] }, answer: 1 },
+            { type: 'text', question: { en: "On a road designated as one way", hi: "एक तरफ़ा के रूप में नामित सड़क पर" }, options: { en: ["Parking is prohibited", "Overtaking is prohibited", "Should not drive in reverse gear", "Honking is prohibited"], hi: ["पार्किंग प्रतिबंधित है", "ओवरटेक करना प्रतिबंधित है", "रिवर्स गियर में ड्राइव नहीं करना चाहिए", "हॉर्न बजाना प्रतिबंधित है"] }, answer: 2 },
+            { type: 'image', image: 'https://i.imgur.com/3zV3b8m.png', question: { en: "Identify this traffic sign.", hi: "इस यातायात संकेत को पहचानें।" }, options: { en: ["U-turn allowed", "U-turn prohibited", "Right turn ahead", "Roundabout ahead"], hi: ["यू-टर्न की अनुमति है", "यू-टर्न प्रतिबंधित है", "आगे दाहिना मोड़ है", "आगे गोलचक्कर है"] }, answer: 1 },
+            { type: 'image', image: 'https://i.imgur.com/O3A4f3g.png', question: { en: "This sign represents:", hi: "यह संकेत दर्शाता है:" }, options: { en: ["One Way", "Road Closed", "No Entry for vehicular traffic", "Hospital Zone"], hi: ["एक तरफ़ा", "सड़क बंद है", "वाहनों का प्रवेश निषेध", "अस्पताल क्षेत्र"] }, answer: 2 },
+            { type: 'text', question: { en: "A valid PUC (Pollution Under Control) certificate is required for", hi: "एक वैध पीयूसी (प्रदूषण नियंत्रण) प्रमाण पत्र की आवश्यकता है" }, options: { en: ["All motor vehicles", "Only commercial vehicles", "Only vehicles older than 5 years", "Only two-wheelers"], hi: ["सभी मोटर वाहनों के लिए", "केवल वाणिज्यिक वाहनों के लिए", "केवल 5 वर्ष से पुराने वाहनों के लिए", "केवल दोपहिया वाहनों के लिए"] }, answer: 0 },
+            { type: 'image', image: 'https://i.imgur.com/h5v1J7Q.png', question: { en: "What does this sign mean?", hi: "इस संकेत का क्या अर्थ है?" }, options: { en: ["Horn Compulsory", "Sound horn continuously", "May sound horn", "Horn Prohibited"], hi: ["हॉर्न अनिवार्य", "लगातार हॉर्न बजाएं", "हॉर्न बजा सकते हैं", "हॉर्न प्रतिबंधित"] }, answer: 3 },
+            { type: 'image', image: 'https://i.imgur.com/eY9f0wU.png', question: { en: "This sign indicates:", hi: "यह संकेत इंगित करता है:" }, options: { en: ["School ahead", "Pedestrians not allowed", "Pedestrian crossing ahead", "Playground ahead"], hi: ["आगे स्कूल है", "पैदल चलने वालों को अनुमति नहीं है", "आगे पैदल पार पथ है", "आगे खेल का मैदान है"] }, answer: 2 },
+            { type: 'text', question: { en: "The hand brake is to be used", hi: "हैंड ब्रेक का उपयोग किया जाना है" }, options: { en: ["To reduce the speed", "To park a vehicle", "For sudden braking", "Only in emergency"], hi: ["गति कम करने के लिए", "वाहन पार्क करने के लिए", "अचानक ब्रेक लगाने के लिए", "केवल आपात स्थिति में"] }, answer: 1 },
+            { type: 'image', image: 'https://i.imgur.com/sW3v2aJ.png', question: { en: "What does this sign mean?", hi: "इस संकेत का क्या अर्थ है?" }, options: { en: ["Parking on left allowed", "No Parking", "End of restriction", "Police station ahead"], hi: ["बाईं ओर पार्किंग की अनुमति है", "पार्किंग नहीं", "प्रतिबंध का अंत", "आगे पुलिस स्टेशन है"] }, answer: 1 },
+            { type: 'image', image: 'https://i.imgur.com/B9O2v8p.png', question: { en: "This sign means:", hi: "इस संकेत का अर्थ है:" }, options: { en: ["Stop", "Give Way", "Intersection ahead", "Proceed with caution"], hi: ["रुकें", "रास्ता दें", "आगे चौराहा है", "सावधानी से आगे बढ़ें"] }, answer: 1 },
+        ];
+        const dom = {
+            aiLoadingScreen: document.getElementById('ai-loading-screen'), quizContainer: document.getElementById('quiz-container'), resultsContainer: document.getElementById('results-container'),
+            questionCounter: document.getElementById('question-counter'), timer: document.getElementById('timer'), imageContainer: document.getElementById('image-container'),
+            questionText: document.getElementById('question-text'), optionsContainer: document.getElementById('options-container'), nextBtn: document.getElementById('next-btn'),
+            quitBtn: document.getElementById('quit-btn'), explainBtn: document.getElementById('explain-btn'), explanationContainer: document.getElementById('explanation-container'),
+            explanationLoader: document.getElementById('explanation-loader'), explanationBox: document.getElementById('explanation-box'), explanationText: document.getElementById('explanation-text'),
+            resultIcon: document.getElementById('result-icon'), resultTitle: document.getElementById('result-title'), resultMessage: document.getElementById('result-message'),
+            scoreText: document.getElementById('score-text'), retryBtn: document.getElementById('retry-btn'), dashboardBtn: document.getElementById('dashboard-btn'),
+            questionArea: document.getElementById('question-area'), pauseOverlay: document.getElementById('pause-overlay'), pauseBtn: document.getElementById('pause-btn'), resumeBtn: document.getElementById('resume-btn'),
+        };
+        let state = { questions: [], currentQuestionIndex: 0, score: 0, timerInterval: null, timeLeft: 600, userLang: 'en', numQuestions: 15, selectedOption: null, isAnswerSubmitted: false, isPaused: false, useAI: false, };
+        const translations = {
+            en: { question: "Question", of: "of", submit: "Submit", next: "Next Question", quit: "Quit", explain: "✨ Explain", resultTitle: "Test Completed!", passMessage: "Congratulations! You Passed!", failMessage: "Keep Practicing! You Failed.", retry: "Retry Test", dashboard: "Go to Dashboard" },
+            hi: { question: "प्रश्न", of: "में से", submit: "जमा करें", next: "अगला प्रश्न", quit: "छोड़ें", explain: "✨ समझाएं", resultTitle: "टेस्ट पूरा हुआ!", passMessage: "बधाई हो! आप पास हो गए!", failMessage: "अभ्यास करते रहें! आप फेल हो गए।", retry: "पुनः प्रयास करें", dashboard: "डैशबोर्ड पर जाएं" }
+        };
+        function pauseTimer() { if (state.isPaused || state.isAnswerSubmitted) return; state.isPaused = true; clearInterval(state.timerInterval); dom.pauseOverlay.classList.remove('hidden'); dom.pauseOverlay.classList.add('flex'); }
+        function resumeTimer() { if (!state.isPaused) return; state.isPaused = false; dom.pauseOverlay.classList.add('hidden'); dom.pauseOverlay.classList.remove('flex'); startTimer(); }
+        function startTimer() { state.timerInterval = setInterval(() => { state.timeLeft--; const minutes = Math.floor(state.timeLeft / 60); const seconds = state.timeLeft % 60; dom.timer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`; if (state.timeLeft <= 0) { clearInterval(state.timerInterval); showResults(); } }, 1000); }
+        function loadQuestion() {
+            dom.questionArea.style.opacity = 0;
+            setTimeout(() => {
+                state.isAnswerSubmitted = false; state.selectedOption = null; const currentQuestion = state.questions[state.currentQuestionIndex]; const t = translations[state.userLang];
+                dom.questionCounter.textContent = `${t.question} ${state.currentQuestionIndex + 1} ${t.of} ${state.questions.length}`; dom.questionText.textContent = currentQuestion.question[state.userLang];
+                dom.imageContainer.innerHTML = '';
+                if (currentQuestion.type === 'image') {
+                    const img = document.createElement('img'); img.src = currentQuestion.image; img.alt = "Traffic Sign"; img.className = "mx-auto h-32 w-32 object-contain transition-transform duration-500 hover:scale-110";
+                    img.onerror = function() { this.onerror=null; const signName = currentQuestion.options[state.userLang][currentQuestion.answer]; this.src=`https://placehold.co/150x150/ef4444/ffffff?text=Image+Error\\n(${encodeURIComponent(signName)})`; };
+                    dom.imageContainer.appendChild(img);
+                }
+                dom.optionsContainer.innerHTML = '';
+                currentQuestion.options[state.userLang].forEach((option, index) => {
+                    const button = document.createElement('button'); button.className = 'option-btn w-full text-left p-4 border-2 rounded-lg'; button.textContent = option; button.dataset.index = index; button.addEventListener('click', () => selectOption(button, index));
+                    dom.optionsContainer.appendChild(button);
+                });
+                dom.nextBtn.textContent = t.submit; dom.nextBtn.disabled = true; dom.nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                dom.explainBtn.classList.add('hidden'); dom.explanationContainer.classList.add('hidden'); dom.questionArea.style.opacity = 1;
+            }, 300);
+        }
+        function selectOption(button, index) { if (state.isAnswerSubmitted) return; Array.from(dom.optionsContainer.children).forEach(btn => btn.classList.remove('selected')); button.classList.add('selected'); state.selectedOption = index; dom.nextBtn.disabled = false; dom.nextBtn.classList.remove('opacity-50', 'cursor-not-allowed'); }
+        function handleSubmit() {
+            if (state.isAnswerSubmitted) { state.currentQuestionIndex++; if (state.currentQuestionIndex < state.questions.length) loadQuestion(); else showResults(); return; }
+            state.isAnswerSubmitted = true; const currentQuestion = state.questions[state.currentQuestionIndex]; const answerIndex = currentQuestion.answer; const optionButtons = dom.optionsContainer.children;
+            Array.from(optionButtons).forEach(btn => btn.disabled = true);
+            if (state.selectedOption === answerIndex) { state.score++; optionButtons[state.selectedOption].classList.add('correct'); } else { optionButtons[state.selectedOption].classList.add('incorrect'); optionButtons[answerIndex].classList.add('correct'); }
+            dom.nextBtn.textContent = translations[state.userLang].next; dom.explainBtn.classList.remove('hidden');
+        }
+        async function getExplanation() {
+            dom.explainBtn.disabled = true; dom.explainBtn.classList.add('opacity-50'); dom.explanationContainer.classList.remove('hidden'); dom.explanationBox.classList.add('hidden'); dom.explanationLoader.classList.remove('hidden');
+            const currentQuestion = state.questions[state.currentQuestionIndex];
+            const prompt = `You are an expert driving instructor in India. Explain the rule behind this traffic question and why the correct answer is the right choice. Language: ${state.userLang === 'hi' ? 'Hindi' : 'English'}. Question: "${currentQuestion.question[state.userLang]}". Correct Answer: "${currentQuestion.options[state.userLang][currentQuestion.answer]}"`;
+            try {
+                const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] }; const apiKey = "AIzaSyBHeIvzQBvX4SWU9IReNuqvFeGuQ_nNWzw"; const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!response.ok) throw new Error(`API error`);
+                const result = await response.json();
+                dom.explanationText.innerText = result.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't generate an explanation.";
+            } catch (error) { dom.explanationText.innerText = "An error occurred. Please try again."; } finally { dom.explanationLoader.classList.add('hidden'); dom.explanationBox.classList.remove('hidden'); dom.explainBtn.disabled = false; dom.explainBtn.classList.remove('opacity-50'); }
+        }
+        function showResults() {
+            clearInterval(state.timerInterval); dom.quizContainer.classList.add('hidden'); dom.resultsContainer.classList.remove('hidden');
+            const t = translations[state.userLang]; const passMark = Math.ceil(state.questions.length * 0.8);
+            dom.scoreText.textContent = `${state.score} / ${state.questions.length}`; dom.resultTitle.textContent = t.resultTitle;
+            if (state.score >= passMark) { dom.resultMessage.textContent = t.passMessage; dom.resultMessage.className = 'text-2xl font-semibold mb-4 text-green-500'; dom.resultIcon.textContent = '🎉';
+            } else { dom.resultMessage.textContent = t.failMessage; dom.resultMessage.className = 'text-2xl font-semibold mb-4 text-red-500'; dom.resultIcon.textContent = '😔'; }
+            dom.retryBtn.textContent = t.retry; dom.dashboardBtn.textContent = t.dashboard;
+        }
+        async function generateAIQuestions() {
+            dom.aiLoadingScreen.classList.remove('hidden');
+            const prompt = `Generate ${state.numQuestions} multiple-choice questions for an Indian RTO driving license test. Each question must have exactly 4 options. Include a mix of text and image-based questions. For image questions, use a real, direct image URL from a reliable source like 'https://i.imgur.com/S32v78A.png'. Provide the output as a valid JSON array. Each object should have: { "type": "text" or "image", "image": "url", "question": { "en": "...", "hi": "..." }, "options": { "en": ["...", "...", "...", "..."], "hi": ["...", "...", "...", "..."] }, "answer": 0-3 }. Do not include any text outside the JSON array.`;
+            try {
+                const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] }; const apiKey = "AIzaSyBHeIvzQBvX4SWU9IReNuqvFeGuQ_nNWzw"; const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!response.ok) throw new Error('AI question generation failed');
+                const result = await response.json(); const jsonText = result.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim();
+                state.questions = JSON.parse(jsonText);
+            } catch (error) { state.questions = standardQuestions.sort(() => 0.5 - Math.random()).slice(0, state.numQuestions);
+            } finally { dom.aiLoadingScreen.classList.add('hidden'); dom.quizContainer.classList.remove('hidden'); startTimer(); loadQuestion(); }
+        }
+        function updateTime() { const timeElement = document.getElementById('system-time'); if (timeElement) { timeElement.textContent = new Date().toLocaleString(); } }
+        async function initializeTest() {
+            const urlParams = new URLSearchParams(window.location.search);
+            state.userLang = urlParams.get('lang') || localStorage.getItem('userLanguage') || 'en';
+            state.numQuestions = parseInt(urlParams.get('num'), 10) || 15; state.useAI = urlParams.get('ai') === 'true';
+            const t = translations[state.userLang]; document.title = state.userLang === 'hi' ? 'अभ्यास टेस्ट' : 'Practice Test';
+            dom.quitBtn.textContent = t.quit; dom.nextBtn.textContent = t.submit; dom.explainBtn.textContent = t.explain;
+            const retryUrl = `test.html?lang=${state.userLang}&num=${state.numQuestions}&ai=${state.useAI}`; const dashboardUrl = `dashboard.html?lang=${state.userLang}`;
+            dom.quitBtn.href = dashboardUrl; dom.retryBtn.href = retryUrl; dom.dashboardBtn.href = dashboardUrl;
+            
+            updateTime();
+            setInterval(updateTime, 1000);
+
+            if (state.useAI) { await generateAIQuestions(); } else { state.questions = standardQuestions.sort(() => 0.5 - Math.random()).slice(0, state.numQuestions); dom.quizContainer.classList.remove('hidden'); startTimer(); loadQuestion(); }
+        }
+        document.addEventListener('DOMContentLoaded', initializeTest);
+        dom.nextBtn.addEventListener('click', handleSubmit); dom.explainBtn.addEventListener('click', getExplanation);
+        dom.pauseBtn.addEventListener('click', pauseTimer); dom.resumeBtn.addEventListener('click', resumeTimer);
+    </script>
+</body>
+</html>

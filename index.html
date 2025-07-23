@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driving License Practice Test - India</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #e8d6cb; /* Champagne Pink */
+        }
+        .bg-main {
+            background-color: #e8d6cb; /* Champagne Pink */
+        }
+        .text-main-dark {
+            color: #5d2e46; /* Violet (JTC) */
+        }
+        .text-main-light {
+            color: #faf7f4; /* Lightest Champagne Pink */
+        }
+        .card-primary {
+            background-color: #ad6a6c; /* Redwood */
+        }
+        .card-secondary {
+            background-color: #b58db6; /* African Violet */
+        }
+        .card-hover {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 25px -5px rgba(93, 46, 70, 0.15);
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in-up { animation: fadeInUp 0.8s ease-out forwards; opacity: 0; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-400 { animation-delay: 0.4s; }
+        .delay-600 { animation-delay: 0.6s; }
+        
+        .loader {
+            border: 2px solid #e8d6cb;
+            border-radius: 50%;
+            border-top: 2px solid #ad6a6c; /* Redwood */
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .footer {
+            background-color: #5d2e46; /* Violet (JTC) */
+            color: #e8d6cb; /* Champagne Pink */
+        }
+    </style>
+</head>
+<body class="bg-main flex flex-col min-h-screen">
+    <main class="flex-grow flex items-center justify-center">
+        <div class="w-full max-w-4xl mx-auto p-6">
+            <div class="text-center mb-10">
+                <h1 class="text-4xl md:text-5xl font-bold text-main-dark fade-in-up">Driving License Practice Test</h1>
+                <p class="text-lg text-main-dark/80 mt-2 fade-in-up delay-200">Prepare for your RTO Learner's License test in India.</p>
+                <p class="text-lg text-main-dark/80 mt-1 fade-in-up delay-200">भारत में अपने आरटीओ लर्नर्स लाइसेंस टेस्ट की तैयारी करें।</p>
+            </div>
+
+            <div class="bg-white/50 backdrop-blur-sm rounded-2xl shadow-xl p-8 md:p-12 fade-in-up delay-400">
+                <h2 class="text-2xl md:text-3xl font-semibold text-center text-main-dark mb-8">Choose Your Language / अपनी भाषा चुनें</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- English Card -->
+                    <a href="dashboard.html?lang=en" class="card-hover block p-8 card-primary text-main-light rounded-xl text-center no-underline">
+                        <div class="text-4xl mb-4">🇬🇧</div>
+                        <h3 class="text-2xl font-bold mb-2">English</h3>
+                        <p class="font-light">Start the test in English.</p>
+                    </a>
+                    
+                    <!-- Hindi Card -->
+                    <a href="dashboard.html?lang=hi" class="card-hover block p-8 card-secondary text-main-light rounded-xl text-center no-underline">
+                        <div class="text-4xl mb-4">🇮🇳</div>
+                        <h3 class="text-2xl font-bold mb-2">हिन्दी</h3>
+                        <p class="font-light">टेस्ट हिंदी में शुरू करें।</p>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="mt-8 bg-white/50 backdrop-blur-sm rounded-2xl p-6 fade-in-up delay-600">
+                 <h3 class="text-xl font-semibold mb-3 text-center text-main-dark">💡 Did You Know? / क्या आप जानते हैं?</h3>
+                 <div id="fact-loader" class="flex items-center justify-center">
+                    <div class="loader"></div>
+                    <p class="ml-3 text-main-dark/80">Fetching a fun fact...</p>
+                </div>
+                 <p id="gemini-fact" class="text-center text-lg text-main-dark hidden"></p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="w-full py-4 footer">
+        <div class="container mx-auto px-6 flex justify-between items-center text-sm">
+            <p>&copy; 2025 | Created by 
+                <a href="https://sjstar.github.io/portfolio/" target="_blank" rel="noopener noreferrer" class="font-bold hover:underline" style="color: #b58db6;">SJ Star</a>
+                <a href="https://www.linkedin.com/in/sjstar/" target="_blank" rel="noopener noreferrer" class="inline-block ml-2 transition-transform hover:scale-110">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="h-5 w-5" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                </a>
+            </p>
+            <p id="system-time" class="font-semibold"></p>
+        </div>
+    </footer>
+
+    <script>
+        async function getDrivingFact() {
+            const factLoader = document.getElementById('fact-loader');
+            const factText = document.getElementById('gemini-fact');
+            const prompt = `Tell me a surprising or little-known traffic rule or driving fact specific to India. Make it short and interesting for someone about to take a driving test. Provide the fact in both English and Hindi, separated by a ' / '. For example: 'Fact in English / Fact in Hindi'.`;
+
+            try {
+                const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+                const apiKey = "AIzaSyBHeIvzQBvX4SWU9IReNuqvFeGuQ_nNWzw"; 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!response.ok) throw new Error(`API error`);
+                const result = await response.json();
+                factText.innerText = result.candidates?.[0]?.content?.parts?.[0]?.text || "In India, it's mandatory to have a first-aid kit in your vehicle. / भारत में, आपके वाहन में फर्स्ट-एड किट रखना अनिवार्य है।";
+            } catch (error) {
+                console.error("Error fetching fact:", error);
+                factText.innerText = "In India, it's mandatory to have a first-aid kit in your vehicle. / भारत में, आपके वाहन में फर्स्ट-एड किट रखना अनिवार्य है।";
+            } finally {
+                factLoader.classList.add('hidden');
+                factText.classList.remove('hidden');
+            }
+        }
+
+        function updateTime() {
+            const timeElement = document.getElementById('system-time');
+            if (timeElement) {
+                timeElement.textContent = new Date().toLocaleString();
+            }
+        }
+
+        document.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const url = new URL(this.href);
+                const lang = url.searchParams.get('lang');
+                if (lang) localStorage.setItem('userLanguage', lang);
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            getDrivingFact();
+            updateTime();
+            setInterval(updateTime, 1000);
+        });
+    </script>
+</body>
+</html>
